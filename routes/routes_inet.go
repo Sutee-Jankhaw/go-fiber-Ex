@@ -20,6 +20,8 @@ func UserRoutes(app *fiber.App) {
 		},
 	}))
 
+	user.Get("/:str/search")
+	user.Get("/json", c.GetUserJson)
 	user.Post("/", c.CreateUser)
 	user.Put("/:id", c.UpdateUser)
 	user.Delete("/:id", c.RemoveUser)
