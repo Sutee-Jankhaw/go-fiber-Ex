@@ -11,18 +11,16 @@ func UserRoutes(app *fiber.App) {
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
 	user := v1.Group("user")
-
-	user.Get("/", c.GetUser)
-
-	app.Use(basicauth.New(basicauth.Config{
+	auth := basicauth.New(basicauth.Config{
 		Users: map[string]string{
 			"testgo": "23012023",
 		},
-	}))
-
-	user.Get("/:str/search")
-	user.Get("/json", c.GetUserJson)
-	user.Post("/", c.CreateUser)
-	user.Put("/:id", c.UpdateUser)
-	user.Delete("/:id", c.RemoveUser)
+	})
+	user.Get("/", c.GetUser)
+	user.Get("/json", auth, c.GetUserJson)
+	user.Get("/search", auth, c.SearchUser)
+	user.Get("/:id", auth, c.GetUserById)
+	user.Post("/", auth, c.CreateUser)
+	user.Put("/:id", auth, c.UpdateUser)
+	user.Delete("/:id", auth, c.RemoveUser)
 }

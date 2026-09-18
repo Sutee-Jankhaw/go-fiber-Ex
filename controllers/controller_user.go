@@ -3,6 +3,7 @@ package controllers
 import (
 	"go-fiber-test/database"
 	m "go-fiber-test/models"
+	"go-fiber-test/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -12,6 +13,29 @@ func GetUser(c *fiber.Ctx) error {
 	var user []m.Users
 	result := db.Find(&user)
 
+	if result.RowsAffected == 0 {
+		return c.SendStatus(404)
+	}
+	return c.Status(200).JSON(&user)
+}
+
+func GetUserById(c *fiber.Ctx) error {
+	id := c.Params("id")
+	db := database.DBConn
+	var user []m.Users
+	result := db.Where("id = ?", id).Find(&user)
+
+	if result.RowsAffected == 0 {
+		return c.SendStatus(404)
+	}
+	return c.Status(200).JSON(&user)
+}
+
+func SearchUser(c *fiber.Ctx) error {
+	db := database.DBConn
+	str := c.Query("search")
+	var user []m.Users
+	result := db.Where("employee_id LIKE ? OR name LIKE ? OR last_name LIKE ?", "%"+str+"%", "%"+str+"%", "%"+str+"%").Find(&user)
 	if result.RowsAffected == 0 {
 		return c.SendStatus(404)
 	}
@@ -69,13 +93,28 @@ func GetUserJson(c *fiber.Ctx) error {
 
 func CreateUser(c *fiber.Ctx) error {
 	db := database.DBConn
-	var user m.Users
-	if err := c.BodyParser(&user); err != nil {
+	var req m.UserPayLoad
+
+	if err := c.BodyParser(&req); err != nil {
 		return c.Status(503).SendString(err.Error())
 	}
-
-	db.Create(&user)
-	return c.Status(201).JSON(user)
+	formatBirthday, err := utils.ParseDate(req.Birthday)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "birthday ต้องอยู่ในรูปแบบ YYYY-MM-DD",
+		})
+	}
+	userPayload := m.Users{
+		EmployeeID: req.EmployeeID,
+		Name:       req.Name,
+		LastName:   req.LastName,
+		BirthDay:   formatBirthday,
+		Age:        req.Age,
+		Email:      req.Email,
+		Tel:        req.Tel,
+	}
+	db.Create(&userPayload)
+	return c.Status(201).JSON(userPayload)
 }
 
 func UpdateUser(c *fiber.Ctx) error {

@@ -6,6 +6,16 @@ import (
 	"gorm.io/gorm"
 )
 
+type UserPayLoad struct {
+	EmployeeID uint   `json:"employee_id"`
+	Name       string `json:"name"`
+	LastName   string `json:"lastname"`
+	Birthday   string `json:"birthday"`
+	Age        int    `json:"age"`
+	Email      string `json:"email"`
+	Tel        string `json:"tel"`
+}
+
 type Users struct {
 	gorm.Model
 	EmployeeID uint      `json:"employee_id"`
